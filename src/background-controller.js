@@ -3,9 +3,18 @@
   const settingsHelpers = root.webrtcSettings || require("./settings");
 
   function createBackgroundController(chromeApi) {
+    function runtimeLastErrorMessage() {
+      return chromeApi.runtime && chromeApi.runtime.lastError
+        ? chromeApi.runtime.lastError.message
+        : null;
+    }
+
     function callbackToPromise(fn) {
       return new Promise((resolve) => {
-        fn(resolve);
+        fn((value) => {
+          runtimeLastErrorMessage();
+          resolve(value);
+        });
       });
     }
 
@@ -336,6 +345,10 @@
 
       chromeApi.tabs.onActivated.addListener((activeInfo) => {
         chromeApi.tabs.get(activeInfo.tabId, (tab) => {
+          if (runtimeLastErrorMessage()) {
+            return;
+          }
+
           if (tab && tab.url) {
             updatePolicyForUrl(tab.url);
             updateActionForUrl(tab.id, tab.url);

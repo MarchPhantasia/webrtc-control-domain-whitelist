@@ -87,8 +87,20 @@ test("extension UI and injection files exist with expected message hooks", () =>
   assert.match(popupHtml, /当前页面/);
   assert.match(popupHtml, /打开选项页面/);
   assert.match(popupJs, /getPopupState/);
+  assert.match(popupJs, /getSettings/);
+  assert.match(popupJs, /Unknown request/);
+  assert.match(popupJs, /buildFallbackState/);
   assert.match(popupJs, /updateSettings/);
   assert.match(popupJs, /addDomain/);
   assert.match(popupJs, /removeDomain/);
   assert.match(popupJs, /openOptionsPage/);
+});
+
+test("popup styles use readable control text sizes", () => {
+  const popupCss = readText("popup/popup.css");
+
+  assert.match(popupCss, /#status-text\s*{[^}]*font-size:\s*13px/s);
+  assert.match(popupCss, /\.domain\s*{[^}]*font-size:\s*16px/s);
+  assert.match(popupCss, /button\s*{[^}]*font-size:\s*16px/s);
+  assert.match(popupCss, /#message\s*{[^}]*font-size:\s*13px/s);
 });

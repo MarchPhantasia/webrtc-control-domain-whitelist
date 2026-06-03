@@ -57,6 +57,142 @@
     });
   }
 
+  function isValidIpv4(hostname) {
+    const parts = hostname.split(".");
+
+    if (parts.length !== 4) {
+      return false;
+    }
+
+    return parts.every((part) => {
+      if (!/^\d{1,3}$/.test(part)) {
+        return false;
+      }
+
+      const value = Number(part);
+      return value >= 0 && value <= 255 && String(value) === part.replace(/^0+(?=\d)/, "");
+    });
+  }
+
+  function isValidDomain(hostname) {
+    if (hostname === "localhost") {
+      return true;
+    }
+
+    if (/^\d/.test(hostname)) {
+      return isValidIpv4(hostname);
+    }
+
+    const labels = hostname.split(".");
+
+    if (labels.length < 2) {
+      return false;
+    }
+
+    return labels.every((label) => (
+      label.length > 0
+      && label.length <= 63
+      && /^[a-z0-9-]+$/.test(label)
+      && !label.startsWith("-")
+      && !label.endsWith("-")
+    ));
+  }
+
+  function normalizeDomain(value) {
+    const input = String(value || "").trim().toLowerCase();
+    let hostname = null;
+
+    if (!input) {
+      return null;
+    }
+
+    try {
+      const url = input.includes("://") ? new URL(input) : new URL(`https://${input}`);
+
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        return null;
+      }
+
+      hostname = url.hostname;
+    } catch (_error) {
+      hostname = input
+        .split("/")[0]
+        .split("?")[0]
+        .split("#")[0]
+        .split(":")[0];
+    }
+
+    if (!hostname || hostname.includes(":")) {
+      return null;
+    }
+
+    hostname = hostname.replace(/\.$/, "");
+
+    if (hostname.startsWith("www.")) {
+      hostname = hostname.slice(4);
+    }
+
+    return isValidDomain(hostname) ? hostname : null;
+  }
+
+  function normalizeWhitelist(whitelist) {
+    const seen = new Set();
+    const normalized = [];
+
+    for (const entry of Array.isArray(whitelist) ? whitelist : []) {
+      const domain = normalizeDomain(entry);
+
+      if (domain && !seen.has(domain)) {
+        seen.add(domain);
+        normalized.push(domain);
+      }
+    }
+
+    return normalized;
+  }
+
+  function isWhitelisted(hostname, whitelist) {
+    return normalizeWhitelist(whitelist).some((entry) => (
+      hostname === entry || hostname.endsWith(`.${entry}`)
+    ));
+  }
+
+  function buildFallbackState(settings, url) {
+    const currentSettings = settings || {};
+    const hostname = normalizeDomain(url);
+    const supported = Boolean(hostname);
+    const whitelisted = supported ? isWhitelisted(hostname, currentSettings.whitelist) : false;
+    const enabled = currentSettings.enabled !== false;
+
+    return {
+      ok: true,
+      enabled,
+      domain: hostname,
+      supported,
+      whitelisted,
+      protect: Boolean(enabled && supported && !whitelisted),
+      settings: currentSettings
+    };
+  }
+
+  async function loadPopupState() {
+    const response = await send("getPopupState", {
+      url: activeTab && activeTab.url
+    });
+
+    if (response.ok || response.error !== "Unknown request") {
+      return response;
+    }
+
+    const settingsResponse = await send("getSettings");
+
+    if (!settingsResponse.ok) {
+      return settingsResponse;
+    }
+
+    return buildFallbackState(settingsResponse.settings, activeTab && activeTab.url);
+  }
+
   function render(state, pageReadable) {
     currentState = state;
 
@@ -96,9 +232,7 @@
     setBusy(true);
     activeTab = await queryActiveTab();
 
-    const response = await send("getPopupState", {
-      url: activeTab && activeTab.url
-    });
+    const response = await loadPopupState();
 
     if (!response.ok) {
       setMessage(response.error || "无法读取当前状态", true);

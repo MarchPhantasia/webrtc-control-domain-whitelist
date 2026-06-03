@@ -292,6 +292,24 @@ test("badge uses green ON and red OFF states", async () => {
   });
 });
 
+test("action badge updates consume stale tab runtime errors", async () => {
+  const chrome = fakeChrome();
+  const controller = createBackgroundController(chrome);
+  let lastErrorReads = 0;
+
+  Object.defineProperty(chrome.runtime, "lastError", {
+    configurable: true,
+    get() {
+      lastErrorReads += 1;
+      return { message: "No tab with id: 7" };
+    }
+  });
+
+  await controller.updateActionForUrl(7, "https://other.test/");
+
+  assert.ok(lastErrorReads > 0);
+});
+
 test("policy follows whitelist and configured protection policy", async () => {
   const chrome = fakeChrome({
     ipPolicy: "default_public_interface_only",
@@ -318,6 +336,33 @@ test("start wires Chrome event listeners", () => {
   assert.equal(chrome.action.onClicked.listeners.length, 1);
   assert.equal(chrome.tabs.onActivated.listeners.length, 1);
   assert.equal(chrome.tabs.onUpdated.listeners.length, 1);
+});
+
+test("stale activated tabs consume runtime errors without policy updates", async () => {
+  const chrome = fakeChrome({}, []);
+  const controller = createBackgroundController(chrome);
+
+  controller.start();
+  await flushAsyncWork();
+
+  let lastErrorReads = 0;
+  Object.defineProperty(chrome.runtime, "lastError", {
+    configurable: true,
+    get() {
+      lastErrorReads += 1;
+      return { message: "No tab with id: 2107979696" };
+    }
+  });
+  chrome.tabs.get = (_tabId, callback) => {
+    callback(undefined);
+  };
+
+  chrome.tabs.onActivated.listeners[0]({ tabId: 2107979696 });
+  await flushAsyncWork();
+
+  assert.ok(lastErrorReads > 0);
+  assert.deepEqual(chrome.policyCalls, []);
+  assert.deepEqual(chrome.badgeTexts, []);
 });
 
 test("inactive tab updates do not change the global WebRTC policy", async () => {
