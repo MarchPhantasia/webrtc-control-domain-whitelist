@@ -1,60 +1,70 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>WebRTC Control</title>
+    <title>WebRTC 控制</title>
     <link rel="stylesheet" href="options.css">
   </head>
   <body>
     <header>
-      <h1>WebRTC Control</h1>
-      <p id="status" role="status"></p>
+      <div>
+        <p class="eyebrow">浏览器扩展设置</p>
+        <h1>WebRTC 控制</h1>
+      </div>
+      <p id="status" role="status" aria-live="polite">正在加载设置</p>
     </header>
 
     <main>
       <section>
-        <h2>Protection</h2>
+        <h2>保护开关</h2>
         <label class="row">
-          <span>Enable protection</span>
+          <span>启用 WebRTC 泄漏保护</span>
           <input id="enabled" type="checkbox">
         </label>
         <label class="stack">
-          <span>IP handling policy</span>
+          <span>IP 处理策略</span>
           <select id="ip-policy">
-            <option value="default">Default</option>
-            <option value="default_public_and_private_interfaces">Default public and private interfaces</option>
-            <option value="default_public_interface_only">Default public interface only</option>
-            <option value="disable_non_proxied_udp">Disable non proxied UDP</option>
+            <option value="default">默认</option>
+            <option value="default_public_and_private_interfaces">默认公共和私有接口</option>
+            <option value="default_public_interface_only">仅默认公共接口</option>
+            <option value="disable_non_proxied_udp">禁用非代理 UDP</option>
           </select>
         </label>
       </section>
 
       <section>
-        <h2>Page API Blocking</h2>
+        <h2>页面 API 阻断</h2>
         <label class="row">
-          <span>Block WebRTC support detection</span>
+          <span>阻断 WebRTC 支持检测</span>
           <input id="block-support-detection" type="checkbox">
         </label>
         <label class="row">
-          <span>Block navigator media devices</span>
+          <span>阻断媒体设备访问</span>
           <input id="block-media-devices" type="checkbox">
         </label>
         <label class="row">
-          <span>Block additional WebRTC objects</span>
+          <span>阻断附加 WebRTC 对象</span>
           <input id="block-additional-objects" type="checkbox">
         </label>
       </section>
 
       <section>
-        <h2>Domain Whitelist</h2>
+        <h2>域名白名单</h2>
         <form id="whitelist-form" autocomplete="off">
           <input id="domain-input" type="text" inputmode="url" placeholder="example.com">
-          <button type="submit">Add</button>
+          <button type="submit">添加</button>
         </form>
         <ul id="whitelist"></ul>
       </section>
     </main>
+
+    <template id="domain-row-template">
+      <li>
+        <span></span>
+        <button type="button" class="secondary">移除</button>
+      </li>
+    </template>
 
     <script src="options.js"></script>
   </body>

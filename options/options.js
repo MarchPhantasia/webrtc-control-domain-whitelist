@@ -8,7 +8,8 @@
     blockAdditionalObjects: document.getElementById("block-additional-objects"),
     form: document.getElementById("whitelist-form"),
     input: document.getElementById("domain-input"),
-    whitelist: document.getElementById("whitelist")
+    whitelist: document.getElementById("whitelist"),
+    rowTemplate: document.getElementById("domain-row-template")
   };
 
   function send(type, payload) {
@@ -37,30 +38,27 @@
 
     if (!whitelist.length) {
       const empty = document.createElement("li");
-      empty.textContent = "No domains added";
+      empty.textContent = "暂无白名单域名";
       elements.whitelist.appendChild(empty);
       return;
     }
 
     for (const domain of whitelist) {
-      const item = document.createElement("li");
-      const label = document.createElement("span");
-      const remove = document.createElement("button");
+      const item = elements.rowTemplate.content.firstElementChild.cloneNode(true);
+      const label = item.querySelector("span");
+      const remove = item.querySelector("button");
 
       label.textContent = domain;
-      remove.type = "button";
-      remove.className = "secondary";
-      remove.textContent = "Remove";
       remove.addEventListener("click", async () => {
         const response = await send("removeDomain", { domain });
 
         if (!response.ok) {
-          setStatus(response.error || "Could not remove domain", true);
+          setStatus(response.error || "无法移除域名", true);
           return;
         }
 
         render(response.settings);
-        setStatus(`${domain} removed`);
+        setStatus(`${domain} 已移出白名单`);
       });
 
       item.append(label, remove);
@@ -93,19 +91,19 @@
     });
 
     if (!response.ok) {
-      setStatus(response.error || "Could not save settings", true);
+      setStatus(response.error || "无法保存设置", true);
       return;
     }
 
     render(response.settings);
-    setStatus("Settings saved");
+    setStatus("设置已保存");
   }
 
   async function loadSettings() {
     const response = await send("getSettings");
 
     if (!response.ok) {
-      setStatus(response.error || "Could not load settings", true);
+      setStatus(response.error || "无法加载设置", true);
       return;
     }
 
@@ -119,15 +117,15 @@
     const response = await send("addDomain", { domain });
 
     if (!response.ok) {
-      setStatus(response.error || "Could not add domain", true);
+      setStatus(response.error || "无法添加域名", true);
       return;
     }
 
     elements.input.value = "";
     render(response.settings);
     setStatus(response.changed
-      ? `${response.domain} added`
-      : `${response.domain} is already whitelisted`);
+      ? `${response.domain} 已加入白名单`
+      : `${response.domain} 已经在白名单中`);
   });
 
   for (const control of [

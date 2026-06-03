@@ -59,23 +59,23 @@
       if (!currentSettings.enabled) {
         return {
           badge: "OFF",
-          color: "#777777",
-          title: "WebRTC leak protection is OFF"
+          color: "#c5221f",
+          title: "WebRTC 泄漏保护已关闭"
         };
       }
 
       if (domain.shouldProtectUrl(url, currentSettings)) {
         return {
           badge: "ON",
-          color: "#217346",
-          title: "WebRTC leak protection is ON"
+          color: "#17823b",
+          title: "WebRTC 泄漏保护已开启"
         };
       }
 
       return {
-        badge: "ALLOW",
-        color: "#b36b00",
-        title: "WebRTC is allowed for this domain"
+        badge: "OFF",
+        color: "#c5221f",
+        title: "当前域名在白名单中，WebRTC 已允许"
       };
     }
 

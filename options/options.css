@@ -1,23 +1,27 @@
 :root {
   color-scheme: light dark;
-  font-family: Arial, sans-serif;
+  font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
   font-size: 14px;
 }
 
 body {
   margin: 0;
   color: #202124;
-  background: #f8f9fa;
+  background: #f5f7fb;
 }
 
 header,
 main {
-  width: min(760px, calc(100% - 32px));
+  width: min(820px, calc(100% - 32px));
   margin: 0 auto;
 }
 
 header {
-  padding: 28px 0 10px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 32px 0 16px;
 }
 
 h1,
@@ -27,49 +31,82 @@ p {
 }
 
 h1 {
-  font-size: 24px;
+  margin-top: 4px;
+  font-size: 26px;
   font-weight: 700;
+  letter-spacing: 0;
 }
 
 h2 {
-  margin-bottom: 14px;
-  font-size: 15px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.eyebrow {
+  color: #5f6368;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 #status {
-  min-height: 20px;
-  margin-top: 8px;
+  min-width: 160px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid #d4dbe7;
+  border-radius: 6px;
   color: #3c4043;
+  background: #fff;
+  line-height: 32px;
+  text-align: center;
 }
 
 #status.error {
   color: #b3261e;
+  border-color: #f2b8b5;
+  background: #fff1f0;
+}
+
+main {
+  margin-bottom: 32px;
+  border: 1px solid #d4dbe7;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgb(60 64 67 / 8%);
 }
 
 section {
-  padding: 20px 0;
-  border-top: 1px solid #dadce0;
+  padding: 22px 24px;
+  border-top: 1px solid #e5e9f0;
+}
+
+section:first-child {
+  border-top: 0;
 }
 
 .row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 40px;
+  min-height: 44px;
   gap: 24px;
+}
+
+.row + .row {
+  border-top: 1px solid #edf0f5;
 }
 
 .stack {
   display: grid;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 select,
 input[type="text"],
 button {
-  min-height: 36px;
-  border: 1px solid #c4c7c5;
+  min-height: 38px;
+  border: 1px solid #c8d0dc;
   border-radius: 6px;
   box-sizing: border-box;
   font: inherit;
@@ -83,15 +120,18 @@ input[type="text"] {
 }
 
 button {
-  padding: 0 14px;
+  padding: 0 16px;
+  border-color: #0b57d0;
   color: #fff;
   background: #0b57d0;
   cursor: pointer;
+  font-weight: 700;
 }
 
 button.secondary {
-  color: #0b57d0;
-  background: transparent;
+  border-color: #dadce0;
+  color: #b3261e;
+  background: #fff;
 }
 
 #whitelist-form {
@@ -102,10 +142,13 @@ button.secondary {
 
 #whitelist {
   display: grid;
-  gap: 8px;
+  gap: 0;
   margin: 16px 0 0;
   padding: 0;
   list-style: none;
+  border: 1px solid #e5e9f0;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 #whitelist li {
@@ -113,8 +156,29 @@ button.secondary {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
-  min-height: 38px;
+  min-height: 44px;
+  padding: 6px 10px 6px 14px;
   border-bottom: 1px solid #e8eaed;
+}
+
+#whitelist li:last-child {
+  border-bottom: 0;
+}
+
+@media (max-width: 560px) {
+  header {
+    display: grid;
+    align-items: start;
+  }
+
+  #status {
+    min-width: 0;
+    text-align: left;
+  }
+
+  #whitelist-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -125,10 +189,29 @@ button.secondary {
 
   #status {
     color: #bdc1c6;
+    background: #2b2c2f;
+    border-color: #3c4043;
+  }
+
+  #status.error {
+    color: #ffb4ab;
+    background: #3b1715;
+    border-color: #8c1d18;
+  }
+
+  main {
+    background: #2b2c2f;
+    border-color: #3c4043;
+    box-shadow: none;
   }
 
   section,
+  .row + .row,
   #whitelist li {
+    border-color: #3c4043;
+  }
+
+  #whitelist {
     border-color: #3c4043;
   }
 
@@ -136,6 +219,12 @@ button.secondary {
   input[type="text"] {
     color: #e8eaed;
     background: #202124;
+    border-color: #5f6368;
+  }
+
+  button.secondary {
+    color: #ffb4ab;
+    background: transparent;
     border-color: #5f6368;
   }
 }

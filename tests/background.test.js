@@ -172,7 +172,7 @@ test("action click toggles current tab domain in the whitelist", async () => {
   assert.equal(added.whitelisted, true);
   assert.deepEqual(chrome.localStore.whitelist, ["example.com"]);
   assert.equal(chrome.policyCalls.at(-1).value, "default");
-  assert.equal(chrome.badgeTexts.at(-1).text, "ALLOW");
+  assert.equal(chrome.badgeTexts.at(-1).text, "OFF");
 
   const removed = await controller.handleActionClick({ id: 7, url: "https://www.example.com/room" });
 
@@ -181,6 +181,38 @@ test("action click toggles current tab domain in the whitelist", async () => {
   assert.deepEqual(chrome.localStore.whitelist, []);
   assert.equal(chrome.policyCalls.at(-1).value, "disable_non_proxied_udp");
   assert.equal(chrome.badgeTexts.at(-1).text, "ON");
+});
+
+test("badge uses green ON and red OFF states", async () => {
+  const chrome = fakeChrome({
+    enabled: true,
+    whitelist: ["example.com"]
+  });
+  const controller = createBackgroundController(chrome);
+
+  const protectedState = await controller.updateActionForUrl(1, "https://other.test/");
+  const whitelistedState = await controller.updateActionForUrl(1, "https://call.example.com/");
+  await controller.saveSettings({
+    enabled: false,
+    whitelist: []
+  });
+  const disabledState = await controller.updateActionForUrl(1, "https://other.test/");
+
+  assert.deepEqual(protectedState, {
+    badge: "ON",
+    color: "#17823b",
+    title: "WebRTC 泄漏保护已开启"
+  });
+  assert.deepEqual(whitelistedState, {
+    badge: "OFF",
+    color: "#c5221f",
+    title: "当前域名在白名单中，WebRTC 已允许"
+  });
+  assert.deepEqual(disabledState, {
+    badge: "OFF",
+    color: "#c5221f",
+    title: "WebRTC 泄漏保护已关闭"
+  });
 });
 
 test("policy follows whitelist and configured protection policy", async () => {

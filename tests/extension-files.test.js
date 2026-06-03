@@ -50,6 +50,7 @@ test("manifest exposes content script and page-context blockers", () => {
 test("extension UI and injection files exist with expected message hooks", () => {
   const inject = readText("content/inject.js");
   const options = readText("options/options.js");
+  const optionsHtml = readText("options/options.html");
 
   for (const relativePath of [
     "content/page/support_detection.js",
@@ -67,4 +68,13 @@ test("extension UI and injection files exist with expected message hooks", () =>
   assert.match(options, /removeDomain/);
   assert.match(options, /updateSettings/);
   assert.match(options, /response\.changed/);
+  assert.match(options, /设置已保存/);
+  assert.match(options, /已加入白名单/);
+  assert.match(options, /已经在白名单中/);
+  assert.match(optionsHtml, /WebRTC 控制/);
+  assert.match(optionsHtml, /保护开关/);
+  assert.match(optionsHtml, /域名白名单/);
+  assert.match(optionsHtml, /正在加载设置/);
+  assert.match(optionsHtml, />添加</);
+  assert.match(optionsHtml, />移除</);
 });
