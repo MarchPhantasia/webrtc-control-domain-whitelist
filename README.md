@@ -7,7 +7,7 @@ A Manifest V3 browser extension for controlling WebRTC leak protection with a do
 - Protection is enabled by default.
 - Non-whitelisted pages use the configured WebRTC IP handling policy.
 - Whitelisted domains use the browser default WebRTC policy and skip page API blockers.
-- The toolbar action toggles the active tab domain in the whitelist.
+- The toolbar action opens a popup for global ON/OFF control, current-domain whitelist toggling, and options access.
 
 ## Load Unpacked
 

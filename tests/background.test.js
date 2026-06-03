@@ -218,6 +218,27 @@ test("add-domain message reports normalized domain and duplicate status", async 
   assert.equal(chrome.storageSets.length, 1);
 });
 
+test("remove-domain message removes the effective parent whitelist rule", async () => {
+  const chrome = fakeChrome({ whitelist: ["example.com"] });
+  const controller = createBackgroundController(chrome);
+
+  const removed = await controller.handleMessage({
+    type: "removeDomain",
+    domain: "https://call.example.com/room"
+  });
+  const state = await controller.handleMessage({
+    type: "getPopupState",
+    url: "https://call.example.com/room"
+  });
+
+  assert.equal(removed.ok, true);
+  assert.equal(removed.changed, true);
+  assert.equal(removed.domain, "call.example.com");
+  assert.deepEqual(removed.settings.whitelist, []);
+  assert.equal(state.whitelisted, false);
+  assert.equal(state.protect, true);
+});
+
 test("action click toggles current tab domain in the whitelist", async () => {
   const chrome = fakeChrome({ whitelist: [] });
   const controller = createBackgroundController(chrome);

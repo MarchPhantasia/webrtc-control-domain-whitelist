@@ -144,6 +144,21 @@
       };
     }
 
+    function findMatchingWhitelistEntry(hostnameOrUrl, whitelist) {
+      const hostname = domain.normalizeDomain(hostnameOrUrl);
+
+      if (!hostname) {
+        return null;
+      }
+
+      const matches = domain.normalizeWhitelist(whitelist).filter((entry) => (
+        hostname === entry || hostname.endsWith(`.${entry}`)
+      ));
+
+      matches.sort((left, right) => right.length - left.length);
+      return matches[0] || null;
+    }
+
     async function updateActiveTabPolicy() {
       const tabs = await callbackToPromise((resolve) => {
         chromeApi.tabs.query({ active: true, currentWindow: true }, (result) => {
@@ -173,9 +188,10 @@
       }
 
       const currentSettings = await getSettings();
-      const wasWhitelisted = domain.isDomainWhitelisted(hostname, currentSettings.whitelist);
+      const matchedWhitelistEntry = findMatchingWhitelistEntry(hostname, currentSettings.whitelist);
+      const wasWhitelisted = Boolean(matchedWhitelistEntry);
       const nextSettings = wasWhitelisted
-        ? settingsHelpers.removeWhitelistDomain(currentSettings, hostname)
+        ? settingsHelpers.removeWhitelistDomain(currentSettings, matchedWhitelistEntry)
         : settingsHelpers.addWhitelistDomain(currentSettings, hostname);
 
       await saveSettings(nextSettings);
@@ -237,8 +253,11 @@
     async function removeDomainFromMessage(input) {
       const currentSettings = await getSettings();
       const normalizedDomain = domain.normalizeDomain(input);
-      const changed = Boolean(normalizedDomain && currentSettings.whitelist.includes(normalizedDomain));
-      const nextSettings = settingsHelpers.removeWhitelistDomain(currentSettings, input);
+      const matchedWhitelistEntry = findMatchingWhitelistEntry(normalizedDomain, currentSettings.whitelist);
+      const changed = Boolean(matchedWhitelistEntry);
+      const nextSettings = changed
+        ? settingsHelpers.removeWhitelistDomain(currentSettings, matchedWhitelistEntry)
+        : currentSettings;
 
       await saveSettings(nextSettings);
       await updateActiveTabPolicy();
