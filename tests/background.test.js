@@ -126,6 +126,62 @@ test("message returns protection decision for the current URL", async () => {
   assert.equal(protectedPage.protect, true);
 });
 
+test("popup state describes the current protected page", async () => {
+  const chrome = fakeChrome({
+    enabled: true,
+    whitelist: ["example.com"]
+  });
+  const controller = createBackgroundController(chrome);
+
+  const state = await controller.handleMessage({
+    type: "getPopupState",
+    url: "https://meet.other.test/room"
+  });
+
+  assert.equal(state.ok, true);
+  assert.equal(state.enabled, true);
+  assert.equal(state.domain, "meet.other.test");
+  assert.equal(state.supported, true);
+  assert.equal(state.whitelisted, false);
+  assert.equal(state.protect, true);
+  assert.equal(state.settings.enabled, true);
+});
+
+test("popup state marks whitelisted pages as allowed", async () => {
+  const chrome = fakeChrome({
+    enabled: true,
+    whitelist: ["example.com"]
+  });
+  const controller = createBackgroundController(chrome);
+
+  const state = await controller.handleMessage({
+    type: "getPopupState",
+    url: "https://call.example.com/"
+  });
+
+  assert.equal(state.ok, true);
+  assert.equal(state.domain, "call.example.com");
+  assert.equal(state.supported, true);
+  assert.equal(state.whitelisted, true);
+  assert.equal(state.protect, false);
+});
+
+test("popup state handles unsupported URLs", async () => {
+  const chrome = fakeChrome();
+  const controller = createBackgroundController(chrome);
+
+  const state = await controller.handleMessage({
+    type: "getPopupState",
+    url: "chrome://extensions"
+  });
+
+  assert.equal(state.ok, true);
+  assert.equal(state.domain, null);
+  assert.equal(state.supported, false);
+  assert.equal(state.whitelisted, false);
+  assert.equal(state.protect, false);
+});
+
 test("add-domain message reports normalized domain and duplicate status", async () => {
   const chrome = fakeChrome({ whitelist: ["example.com"] });
   const controller = createBackgroundController(chrome);

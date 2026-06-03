@@ -125,6 +125,25 @@
       };
     }
 
+    async function getPopupState(url) {
+      const currentSettings = await getSettings();
+      const normalizedDomain = domain.hostnameFromUrl(url);
+      const supported = Boolean(normalizedDomain);
+      const whitelisted = supported
+        ? domain.isDomainWhitelisted(normalizedDomain, currentSettings.whitelist)
+        : false;
+
+      return {
+        ok: true,
+        enabled: currentSettings.enabled,
+        domain: normalizedDomain,
+        supported,
+        whitelisted,
+        protect: supported ? domain.shouldProtectUrl(normalizedDomain, currentSettings) : false,
+        settings: currentSettings
+      };
+    }
+
     async function updateActiveTabPolicy() {
       const tabs = await callbackToPromise((resolve) => {
         chromeApi.tabs.query({ active: true, currentWindow: true }, (result) => {
@@ -258,6 +277,10 @@
           };
         }
 
+        if (request.type === "getPopupState") {
+          return getPopupState(request.url);
+        }
+
         if (request.type === "addDomain") {
           return addDomainFromMessage(request.domain);
         }
@@ -323,6 +346,7 @@
     }
 
     return {
+      getPopupState,
       getSettings,
       handleActionClick,
       handleMessage,
