@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "WebRTC Control",
+  "version": "0.1.0",
+  "description": "Control WebRTC leak protection with a domain whitelist.",
+  "permissions": [
+    "privacy",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "WebRTC Control"
+  },
+  "options_ui": {
+    "open_in_tab": true,
+    "page": "options/options.html"
+  },
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "matches": [
+        "*://*/*"
+      ],
+      "run_at": "document_start",
+      "js": [
+        "content/inject.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "resources": [
+        "content/page/support_detection.js",
+        "content/page/media_devices.js",
+        "content/page/additional_objects.js"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebRTC Control</title>
+    <link rel="stylesheet" href="options.css">
+  </head>
+  <body>
+    <header>
+      <h1>WebRTC Control</h1>
+      <p id="status" role="status"></p>
+    </header>
+
+    <main>
+      <section>
+        <h2>Protection</h2>
+        <label class="row">
+          <span>Enable protection</span>
+          <input id="enabled" type="checkbox">
+        </label>
+        <label class="stack">
+          <span>IP handling policy</span>
+          <select id="ip-policy">
+            <option value="default">Default</option>
+            <option value="default_public_and_private_interfaces">Default public and private interfaces</option>
+            <option value="default_public_interface_only">Default public interface only</option>
+            <option value="disable_non_proxied_udp">Disable non proxied UDP</option>
+          </select>
+        </label>
+      </section>
+
+      <section>
+        <h2>Page API Blocking</h2>
+        <label class="row">
+          <span>Block WebRTC support detection</span>
+          <input id="block-support-detection" type="checkbox">
+        </label>
+        <label class="row">
+          <span>Block navigator media devices</span>
+          <input id="block-media-devices" type="checkbox">
+        </label>
+        <label class="row">
+          <span>Block additional WebRTC objects</span>
+          <input id="block-additional-objects" type="checkbox">
+        </label>
+      </section>
+
+      <section>
+        <h2>Domain Whitelist</h2>
+        <form id="whitelist-form" autocomplete="off">
+          <input id="domain-input" type="text" inputmode="url" placeholder="example.com">
+          <button type="submit">Add</button>
+        </form>
+        <ul id="whitelist"></ul>
+      </section>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>
