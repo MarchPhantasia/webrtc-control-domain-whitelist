@@ -286,7 +286,10 @@ if (typeof importScripts === "function") {
         const url = changeInfo.url || (tab && tab.url);
 
         if (url) {
-          updatePolicyForUrl(url);
+          if (tab && tab.active) {
+            updatePolicyForUrl(url);
+          }
+
           updateActionForUrl(tabId, url);
         }
       });

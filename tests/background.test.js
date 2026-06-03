@@ -98,6 +98,12 @@ function fakeChrome(initialStorage = {}, tabs = [{ id: 1, url: "https://other.te
   };
 }
 
+function flushAsyncWork() {
+  return new Promise((resolve) => {
+    setImmediate(resolve);
+  });
+}
+
 test("message returns protection decision for the current URL", async () => {
   const chrome = fakeChrome({ whitelist: ["example.com"] });
   const controller = createBackgroundController(chrome);
@@ -164,4 +170,37 @@ test("start wires Chrome event listeners", () => {
   assert.equal(chrome.action.onClicked.listeners.length, 1);
   assert.equal(chrome.tabs.onActivated.listeners.length, 1);
   assert.equal(chrome.tabs.onUpdated.listeners.length, 1);
+});
+
+test("inactive tab updates do not change the global WebRTC policy", async () => {
+  const chrome = fakeChrome(
+    { whitelist: ["example.com"] },
+    [
+      { id: 1, url: "https://call.example.com/", active: true },
+      { id: 2, url: "https://other.test/", active: false }
+    ]
+  );
+  const controller = createBackgroundController(chrome);
+
+  controller.start();
+  await flushAsyncWork();
+  chrome.policyCalls.length = 0;
+
+  chrome.tabs.onUpdated.listeners[0](2, { url: "https://other.test/" }, {
+    id: 2,
+    url: "https://other.test/",
+    active: false
+  });
+  await flushAsyncWork();
+
+  assert.deepEqual(chrome.policyCalls, []);
+
+  chrome.tabs.onUpdated.listeners[0](1, { url: "https://other.test/" }, {
+    id: 1,
+    url: "https://other.test/",
+    active: true
+  });
+  await flushAsyncWork();
+
+  assert.equal(chrome.policyCalls.at(-1).value, "disable_non_proxied_udp");
 });
