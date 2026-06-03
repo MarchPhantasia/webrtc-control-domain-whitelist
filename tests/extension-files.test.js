@@ -25,6 +25,14 @@ test("manifest wires the extension runtime", () => {
   assert.ok(manifest.permissions.includes("tabs"));
 });
 
+test("background entry delegates to the controller module", () => {
+  const background = readText("background.js");
+
+  assert.match(background, /src\/background-controller\.js/);
+  assert.match(background, /createBackgroundController\(chrome\)\.start\(\)/);
+  assert.doesNotMatch(background, /function createBackgroundController/);
+});
+
 test("manifest exposes content script and page-context blockers", () => {
   const manifest = readJson("manifest.json");
   const contentScript = manifest.content_scripts[0];
@@ -58,4 +66,5 @@ test("extension UI and injection files exist with expected message hooks", () =>
   assert.match(options, /addDomain/);
   assert.match(options, /removeDomain/);
   assert.match(options, /updateSettings/);
+  assert.match(options, /response\.changed/);
 });

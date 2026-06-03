@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const test = require("node:test");
-const { createBackgroundController } = require("../background");
+const { createBackgroundController } = require("../src/background-controller");
 
 function createEventTarget() {
   const listeners = [];
@@ -18,6 +18,7 @@ function fakeChrome(initialStorage = {}, tabs = [{ id: 1, url: "https://other.te
   const policyCalls = [];
   const multipleRoutesCalls = [];
   const badgeTexts = [];
+  const storageSets = [];
   const titles = [];
   const tabById = new Map(tabs.map((tab) => [tab.id, tab]));
 
@@ -26,6 +27,7 @@ function fakeChrome(initialStorage = {}, tabs = [{ id: 1, url: "https://other.te
     policyCalls,
     multipleRoutesCalls,
     badgeTexts,
+    storageSets,
     titles,
     runtime: {
       lastError: null,
@@ -68,6 +70,7 @@ function fakeChrome(initialStorage = {}, tabs = [{ id: 1, url: "https://other.te
           callback({ ...localStore });
         },
         set(values, callback) {
+          storageSets.push(values);
           Object.assign(localStore, values);
           if (callback) {
             callback();
@@ -121,6 +124,42 @@ test("message returns protection decision for the current URL", async () => {
   assert.equal(whitelisted.protect, false);
   assert.equal(whitelisted.settings.blockSupportDetection, true);
   assert.equal(protectedPage.protect, true);
+});
+
+test("add-domain message reports normalized domain and duplicate status", async () => {
+  const chrome = fakeChrome({ whitelist: ["example.com"] });
+  const controller = createBackgroundController(chrome);
+
+  const duplicate = await controller.handleMessage({
+    type: "addDomain",
+    domain: "https://www.example.com/room"
+  });
+
+  assert.deepEqual(duplicate, {
+    ok: true,
+    changed: false,
+    domain: "example.com",
+    settings: {
+      enabled: true,
+      ipPolicy: "disable_non_proxied_udp",
+      blockSupportDetection: true,
+      blockMediaDevices: false,
+      blockAdditionalObjects: false,
+      whitelist: ["example.com"]
+    }
+  });
+  assert.equal(chrome.storageSets.length, 0);
+
+  const added = await controller.handleMessage({
+    type: "addDomain",
+    domain: "call.example.com"
+  });
+
+  assert.equal(added.ok, true);
+  assert.equal(added.changed, true);
+  assert.equal(added.domain, "call.example.com");
+  assert.deepEqual(added.settings.whitelist, ["example.com", "call.example.com"]);
+  assert.equal(chrome.storageSets.length, 1);
 });
 
 test("action click toggles current tab domain in the whitelist", async () => {

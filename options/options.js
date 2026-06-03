@@ -125,7 +125,9 @@
 
     elements.input.value = "";
     render(response.settings);
-    setStatus(`${response.settings.whitelist.at(-1)} added`);
+    setStatus(response.changed
+      ? `${response.domain} added`
+      : `${response.domain} is already whitelisted`);
   });
 
   for (const control of [
