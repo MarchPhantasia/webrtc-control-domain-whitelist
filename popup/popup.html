@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebRTC Control</title>
+    <link rel="stylesheet" href="popup.css">
+  </head>
+  <body>
+    <main class="popup-shell">
+      <header class="status-card">
+        <span id="status-badge" class="status-badge">...</span>
+        <div>
+          <h1>WebRTC Control</h1>
+          <p id="status-text">正在读取当前页面</p>
+        </div>
+      </header>
+
+      <section class="panel" aria-labelledby="current-page-label">
+        <p id="current-page-label" class="label">当前页面</p>
+        <p id="domain" class="domain">读取中</p>
+      </section>
+
+      <section class="actions">
+        <button id="toggle-enabled" type="button">关闭保护</button>
+        <button id="toggle-domain" type="button" class="secondary">加入白名单</button>
+      </section>
+
+      <p id="message" role="status" aria-live="polite"></p>
+
+      <button id="open-options" type="button" class="link-button">打开选项页面</button>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

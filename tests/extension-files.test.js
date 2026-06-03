@@ -20,6 +20,7 @@ test("manifest wires the extension runtime", () => {
   assert.equal(manifest.background.service_worker, "background.js");
   assert.equal(manifest.options_ui.page, "options/options.html");
   assert.equal(manifest.action.default_title, "WebRTC Control");
+  assert.equal(manifest.action.default_popup, "popup/popup.html");
   assert.ok(manifest.permissions.includes("privacy"));
   assert.ok(manifest.permissions.includes("storage"));
   assert.ok(manifest.permissions.includes("tabs"));
@@ -51,6 +52,8 @@ test("extension UI and injection files exist with expected message hooks", () =>
   const inject = readText("content/inject.js");
   const options = readText("options/options.js");
   const optionsHtml = readText("options/options.html");
+  const popupHtml = readText("popup/popup.html");
+  const popupJs = readText("popup/popup.js");
 
   for (const relativePath of [
     "content/page/support_detection.js",
@@ -58,6 +61,9 @@ test("extension UI and injection files exist with expected message hooks", () =>
     "content/page/additional_objects.js",
     "options/options.html",
     "options/options.css",
+    "popup/popup.html",
+    "popup/popup.css",
+    "popup/popup.js",
     "README.md"
   ]) {
     assert.equal(fs.existsSync(path.join(root, relativePath)), true, `${relativePath} should exist`);
@@ -77,4 +83,12 @@ test("extension UI and injection files exist with expected message hooks", () =>
   assert.match(optionsHtml, /正在加载设置/);
   assert.match(optionsHtml, />添加</);
   assert.match(optionsHtml, />移除</);
+  assert.match(popupHtml, /WebRTC Control/);
+  assert.match(popupHtml, /当前页面/);
+  assert.match(popupHtml, /打开选项页面/);
+  assert.match(popupJs, /getPopupState/);
+  assert.match(popupJs, /updateSettings/);
+  assert.match(popupJs, /addDomain/);
+  assert.match(popupJs, /removeDomain/);
+  assert.match(popupJs, /openOptionsPage/);
 });
